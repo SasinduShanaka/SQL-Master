@@ -1,6 +1,6 @@
 # SQL Master — Backend
 
-Quick start for the backend API (Express + optional OpenAI content generation):
+Quick start for the backend API (Express + optional Groq content generation):
 
 Install dependencies:
 
@@ -15,7 +15,7 @@ Run in development (requires `nodemon`):
 npm run dev
 ```
 
-Environment variables: copy `.env.example` to `.env` and configure `OPENAI_API_KEY`.
-Optional settings: `OPENAI_MODEL` and `OPENAI_BASE_URL`.
+Environment variables: copy `.env.example` to `.env` and configure `GROQ_API_KEY`.
+Optional settings: `GROQ_MODEL` and `GROQ_BASE_URL`.
 
-If no OpenAI key is provided, the backend falls back to a built-in SQL curriculum so the app still works locally.
+If no Groq key is provided, the backend falls back to a built-in SQL curriculum so the app still works locally.
