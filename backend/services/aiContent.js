@@ -119,11 +119,11 @@ function normalizeQuizzes(quizzes, lessons) {
 }
 
 async function callOpenAi(prompt) {
-  const apiKey = process.env.OPENAI_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) return null
 
-  const baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
+  const baseUrl = process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1'
+  const model = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -143,7 +143,7 @@ async function callOpenAi(prompt) {
 
   if (!response.ok) {
     const message = await response.text()
-    throw new Error(`OpenAI request failed: ${response.status} ${message}`)
+    throw new Error(`Groq request failed: ${response.status} ${message}`)
   }
 
   const payload = await response.json()
