@@ -2,7 +2,7 @@ const express = require('express')
 const { getExercises, getExerciseById } = require('../services/aiContent')
 
 const router = express.Router()
-const User = require('../models/User')
+const { users } = require('../services/accountStore')
 const { requireUser, wrap, protectMutation } = require('../services/auth')
 const { summarizeUser } = require('../services/achievements')
 const { executeSandbox } = require('../services/querySandbox')
@@ -12,9 +12,22 @@ router.post('/:exerciseId/submit', protectMutation, requireUser, wrap(async (req
   if (!question) return res.status(404).json({ message: 'Question not found.' })
   const result = await executeSandbox({ action: 'grade', question, sql: req.body.sql })
   if (result.error) return res.status(422).json({ message: result.error })
-  const user = result.correct
-    ? await User.findByIdAndUpdate(req.user._id, { $addToSet: { solvedQuestions: question.id } }, { new: true })
-    : req.user
+  const attempt = {
+    exerciseId: question.id,
+    title: question.question,
+    topic: question.topic,
+    level: question.level,
+    track: question.track,
+    sql: String(req.body.sql || '').slice(0, 5000),
+    correct: result.correct,
+    message: result.message,
+    createdAt: new Date()
+  }
+  const update = {
+    $push: { attemptHistory: { $each: [attempt], $sort: { createdAt: -1 }, $slice: 100 } }
+  }
+  if (result.correct) update.$addToSet = { solvedQuestions: question.id }
+  const user = await users.findByIdAndUpdate(req.user._id, update, { new: true })
   res.json({ ...result, account: summarizeUser(user) })
 }))
 
