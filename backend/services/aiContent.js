@@ -67,6 +67,52 @@ const contentCache = {
 
 function slugify(value) {
   return String(value)
+  const fallbackExercises = [
+    {
+      order: 1,
+      id: 'exercise-high-scores',
+      lessonId: 'intro-select',
+      tableNames: ['students'],
+      question: 'Show the names and scores of students who scored at least 85, sorted highest first.',
+      goal: 'Practice SELECT, WHERE, and ORDER BY.',
+      hints: ['Start with SELECT name, score', 'Filter with WHERE score >= 85', 'Sort with ORDER BY score DESC'],
+      starterSql: 'SELECT name, score\nFROM students\nWHERE score >= 85\nORDER BY score DESC;',
+      solutionSql: 'SELECT name, score FROM students WHERE score >= 85 ORDER BY score DESC;'
+    },
+    {
+      order: 2,
+      id: 'exercise-active-enrollments',
+      lessonId: 'filtering',
+      tableNames: ['enrollments'],
+      question: 'Find every active enrollment in SQL Basics.',
+      goal: 'Practice filtering with WHERE and text conditions.',
+      hints: ['Look for course = SQL Basics', 'Filter status = active'],
+      starterSql: "SELECT studentId, course, status\nFROM enrollments\nWHERE course = 'SQL Basics' AND status = 'active';",
+      solutionSql: "SELECT studentId, course, status FROM enrollments WHERE course = 'SQL Basics' AND status = 'active';"
+    },
+    {
+      order: 3,
+      id: 'exercise-web-cohort',
+      lessonId: 'intro-select',
+      tableNames: ['students'],
+      question: 'List the students from the web cohort only.',
+      goal: 'Practice WHERE with a categorical field.',
+      hints: ['Filter cohort = web', 'Return id and name'],
+      starterSql: "SELECT id, name\nFROM students\nWHERE cohort = 'web';",
+      solutionSql: "SELECT id, name FROM students WHERE cohort = 'web';"
+    },
+    {
+      order: 4,
+      id: 'exercise-course-count',
+      lessonId: 'joins',
+      tableNames: ['courses', 'enrollments'],
+      question: 'Count how many enrollments each course has.',
+      goal: 'Practice aggregation and GROUP BY.',
+      hints: ['Use COUNT(*) and GROUP BY course'],
+      starterSql: 'SELECT course, COUNT(*) AS enrollment_count\nFROM enrollments\nGROUP BY course;',
+      solutionSql: 'SELECT course, COUNT(*) AS enrollment_count FROM enrollments GROUP BY course;'
+    }
+  ]
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')

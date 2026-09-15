@@ -3,6 +3,8 @@ const express = require('express')
 const cors = require('cors')
 const lessonRoutes = require('./routes/lessons')
 const quizRoutes = require('./routes/quizzes')
+const exerciseRoutes = require('./routes/exercises')
+const tableRoutes = require('./routes/tables')
 const sqlRoutes = require('./routes/sql')
 const aiRoutes = require('./routes/ai')
 const { getCatalogRoadmap } = require('./services/aiContent')
@@ -22,6 +24,8 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/lessons', lessonRoutes)
 app.use('/api/quizzes', quizRoutes)
+app.use('/api/exercises', exerciseRoutes)
+app.use('/api/tables', tableRoutes)
 app.use('/api/sql', sqlRoutes)
 app.use('/api/ai', aiRoutes)
 

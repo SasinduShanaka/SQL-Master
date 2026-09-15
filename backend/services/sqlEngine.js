@@ -1,5 +1,39 @@
 const alasql = require('alasql')
 
+const demoTables = [
+  {
+    name: 'students',
+    description: 'Student profiles and scores',
+    columns: ['id', 'name', 'score', 'cohort'],
+    rows: [
+      { id: 1, name: 'Ava', score: 94, cohort: 'web' },
+      { id: 2, name: 'Noah', score: 82, cohort: 'data' },
+      { id: 3, name: 'Mia', score: 76, cohort: 'web' },
+      { id: 4, name: 'Leo', score: 88, cohort: 'data' }
+    ]
+  },
+  {
+    name: 'enrollments',
+    description: 'Which courses each student is in',
+    columns: ['studentId', 'course', 'status'],
+    rows: [
+      { studentId: 1, course: 'SQL Basics', status: 'active' },
+      { studentId: 2, course: 'SQL Basics', status: 'active' },
+      { studentId: 3, course: 'Advanced SQL', status: 'paused' },
+      { studentId: 4, course: 'SQL Basics', status: 'active' }
+    ]
+  },
+  {
+    name: 'courses',
+    description: 'Course catalog for the training app',
+    columns: ['id', 'title', 'level'],
+    rows: [
+      { id: 1, title: 'SQL Basics', level: 'beginner' },
+      { id: 2, title: 'Advanced SQL', level: 'advanced' }
+    ]
+  }
+]
+
 function createDemoDatabase() {
   const db = new alasql.Database('sql-master-demo')
   db.exec(`
@@ -43,4 +77,8 @@ function runQuery(sql) {
   }
 }
 
-module.exports = { runQuery }
+function getDemoTables() {
+  return demoTables
+}
+
+module.exports = { runQuery, getDemoTables }
