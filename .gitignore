@@ -19,3 +19,4 @@ frontend/.env.*
 Thumbs.db
 # Rebuildable local question database
 backend/data/*.sqlite*
+backend/data/accounts.local.json
