@@ -151,6 +151,7 @@ const fallbackTables = [
 ]
 
 const progressStorageKey = 'sqlmaster_progress'
+const learnerIdStorageKey = 'sqlmaster_learner_id'
 
 function readProgress() {
   try {
@@ -161,6 +162,15 @@ function readProgress() {
   }
 }
 
+function getLearnerId() {
+  let learnerId = localStorage.getItem(learnerIdStorageKey)
+  if (!learnerId) {
+    learnerId = window.crypto?.randomUUID?.() || `learner-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    localStorage.setItem(learnerIdStorageKey, learnerId)
+  }
+  return learnerId
+}
+
 export default function App() {
   const [ping, setPing] = useState('loading')
   const [roadmap, setRoadmap] = useState([])
@@ -169,6 +179,7 @@ export default function App() {
   const [exercises, setExercises] = useState([])
   const [tables, setTables] = useState([])
   const [progress, setProgress] = useState(() => readProgress())
+  const [learnerId] = useState(() => getLearnerId())
   const [sql, setSql] = useState(starterSql)
   const [sqlResult, setSqlResult] = useState(null)
   const [quizPick, setQuizPick] = useState({})
@@ -230,6 +241,23 @@ export default function App() {
   }, [progress])
 
   useEffect(() => {
+    fetch('/api/progress', { headers: { 'x-learner-id': learnerId } })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (data?.persisted && Array.isArray(data.entries)) setProgress(data.entries)
+      })
+      .catch(() => {})
+  }, [learnerId])
+
+  function persistProgress(entries) {
+    fetch('/api/progress', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-learner-id': learnerId },
+      body: JSON.stringify({ entries })
+    }).catch(() => {})
+  }
+
+  useEffect(() => {
     function handleHashChange() {
       setPage(window.location.hash.replace('#/', '') || 'home')
     }
@@ -272,35 +300,38 @@ export default function App() {
       body: JSON.stringify({ answerIndex: quizPick[quizId] })
     })
     const result = await response.json()
-    setProgress((current) => [
-      {
-        kind: 'quiz',
-        quizId,
-        correct: result.correct,
-        explanation: result.explanation,
-        selectedIndex: quizPick[quizId],
-        updatedAt: new Date().toISOString()
-      },
-      ...current.filter((item) => item.quizId !== quizId || item.kind !== 'quiz')
-    ])
+    setProgress((current) => {
+      const entries = [
+        {
+          kind: 'quiz',
+          quizId,
+          correct: result.correct,
+          explanation: result.explanation,
+          selectedIndex: quizPick[quizId],
+          updatedAt: new Date().toISOString()
+        },
+        ...current.filter((item) => item.quizId !== quizId || item.kind !== 'quiz')
+      ]
+      persistProgress(entries)
+      return entries
+    })
   }
 
   function saveLessonProgress(lessonId, status) {
-    setProgress((current) => [
-      {
-        kind: 'lesson',
-        lessonId,
-        status,
-        score: status === 'completed' ? 100 : 50,
-        updatedAt: new Date().toISOString()
-      },
-      ...current.filter((item) => item.lessonId !== lessonId || item.kind !== 'lesson')
-    ])
+    setProgress((current) => {
+      const entries = [
+        { kind: 'lesson', lessonId, status, score: status === 'completed' ? 100 : 50, updatedAt: new Date().toISOString() },
+        ...current.filter((item) => item.lessonId !== lessonId || item.kind !== 'lesson')
+      ]
+      persistProgress(entries)
+      return entries
+    })
   }
 
   function clearProgress() {
     localStorage.removeItem(progressStorageKey)
     setProgress([])
+    fetch('/api/progress', { method: 'DELETE', headers: { 'x-learner-id': learnerId } }).catch(() => {})
   }
 
   function navigate(nextPage) {
