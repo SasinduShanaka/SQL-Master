@@ -9,7 +9,21 @@ const userSchema = new mongoose.Schema({
   passedQuizzes: { type: [String], default: [] },
   quizResults: { type: Map, of: new mongoose.Schema({ quizId: String, selectedIndex: Number, correct: Boolean, explanation: String }, { _id: false }), default: {} },
   solvedQuestions: { type: [String], default: [] },
-  flaggedQuestions: { type: [String], default: [] }
+  flaggedQuestions: { type: [String], default: [] },
+  attemptHistory: {
+    type: [new mongoose.Schema({
+      exerciseId: String,
+      title: String,
+      topic: String,
+      level: String,
+      track: String,
+      sql: String,
+      correct: Boolean,
+      message: String,
+      createdAt: { type: Date, default: Date.now }
+    }, { _id: false })],
+    default: []
+  }
 }, { timestamps: true, collection: 'users' })
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema)
