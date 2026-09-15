@@ -1,3 +1,18 @@
+# SQL Master API
+
+Install dependencies and configure MongoDB:
+
+```bash
+npm install
+```
+
+Set `MONGODB_URI` in `backend/.env`, then start the API:
+
+```bash
+npm run dev
+```
+
+Progress is stored in the `progress` collection and keyed by the frontend's `x-learner-id` header.
 # SQL Master — Backend
 
 Quick start for the backend API (Express + optional Groq content generation):
