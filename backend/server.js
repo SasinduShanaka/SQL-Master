@@ -7,6 +7,8 @@ const exerciseRoutes = require('./routes/exercises')
 const tableRoutes = require('./routes/tables')
 const sqlRoutes = require('./routes/sql')
 const aiRoutes = require('./routes/ai')
+const progressRoutes = require('./routes/progress')
+const { connectDatabase } = require('./db')
 const { getCatalogRoadmap } = require('./services/aiContent')
 
 const app = express()
@@ -28,6 +30,7 @@ app.use('/api/exercises', exerciseRoutes)
 app.use('/api/tables', tableRoutes)
 app.use('/api/sql', sqlRoutes)
 app.use('/api/ai', aiRoutes)
+app.use('/api/progress', progressRoutes)
 
 app.get('/api/catalog', async (req, res, next) => {
   try {
@@ -40,4 +43,9 @@ app.get('/api/catalog', async (req, res, next) => {
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+async function startServer() {
+  await connectDatabase()
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+}
+
+startServer()
