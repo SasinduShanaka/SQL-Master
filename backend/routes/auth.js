@@ -1,6 +1,5 @@
 const express = require('express')
-const User = require('../models/User')
-const Session = require('../models/Session')
+const { users, sessions } = require('../services/accountStore')
 const { hashPassword, verifyPassword } = require('../services/passwords')
 const { summarizeUser } = require('../services/achievements')
 const { requireDatabase, requireUser, wrap, startSession, getToken, digest, cookieName, cookieOptions, authRateLimit, protectMutation } = require('../services/auth')
@@ -9,12 +8,12 @@ const dummyHash = hashPassword('unused-password-for-timing-checks')
 
 router.use(protectMutation, requireDatabase)
 router.post('/register', authRateLimit, wrap(async (req, res) => {
-  const { name, email, password } = req.body
+  const { name, email, password } = req.body || {}
   if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 80) return res.status(400).json({ message: 'Use a name between 2 and 80 characters.' })
   if (typeof email !== 'string' || email.trim().length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return res.status(400).json({ message: 'Enter a valid email address.' })
   if (typeof password !== 'string' || password.length < 12 || password.length > 128) return res.status(400).json({ message: 'Use a password between 12 and 128 characters.' })
   try {
-    const user = await User.create({ name: name.trim(), email: email.trim().toLowerCase(), passwordHash: await hashPassword(password) })
+    const user = await users.create({ name: name.trim(), email: email.trim().toLowerCase(), passwordHash: await hashPassword(password) })
     await startSession(req, res, user._id)
     res.status(201).json(summarizeUser(user))
   } catch (error) {
@@ -24,9 +23,9 @@ router.post('/register', authRateLimit, wrap(async (req, res) => {
 }))
 
 router.post('/login', authRateLimit, wrap(async (req, res) => {
-  const { email, password } = req.body
-  if (typeof email !== 'string' || email.length > 254 || typeof password !== 'string' || password.length > 128) return res.status(400).json({ message: 'Enter your email and password.' })
-  const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+passwordHash')
+  const { email, password } = req.body || {}
+  if (typeof email !== 'string' || !email.trim() || email.length > 254 || typeof password !== 'string' || !password.length || password.length > 128) return res.status(400).json({ message: 'Enter your email and password.' })
+  const user = await users.findOne({ email: email.trim().toLowerCase() }).select('+passwordHash')
   const valid = await verifyPassword(password, user?.passwordHash || await dummyHash)
   if (!user || !valid) return res.status(401).json({ message: 'Email or password is incorrect.' })
   await startSession(req, res, user._id)
@@ -36,7 +35,7 @@ router.post('/login', authRateLimit, wrap(async (req, res) => {
 router.get('/me', requireUser, wrap(async (req, res) => res.json(summarizeUser(req.user))))
 router.post('/logout', wrap(async (req, res) => {
   const token = getToken(req)
-  if (token) await Session.deleteOne({ tokenHash: digest(token) })
+  if (token) await sessions.deleteOne({ tokenHash: digest(token) })
   res.clearCookie(cookieName, cookieOptions())
   res.json({ message: 'Logged out.' })
 }))
