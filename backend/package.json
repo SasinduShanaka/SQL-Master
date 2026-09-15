@@ -8,7 +8,7 @@
     "test": "node --test test/*.test.js",
     "seed": "node scripts/seed.js",
     "db:accounts": "node scripts/initAccounts.js",
-    "test:auth": "node --test test/auth.test.js"
+    "test:auth": "node --test test/auth.test.js test/authOffline.test.js"
   },
   "dependencies": {
     "alasql": "^4.10.0",
