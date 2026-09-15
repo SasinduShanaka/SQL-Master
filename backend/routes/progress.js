@@ -1,56 +1,30 @@
 const express = require('express')
-const Progress = require('../models/Progress')
-const { isDatabaseConnected } = require('../db')
-
+const User = require('../models/User')
+const { requireUser, protectMutation, wrap } = require('../services/auth')
+const { summarizeUser } = require('../services/achievements')
+const { getLessonById } = require('../services/aiContent')
+const { getExerciseById } = require('../services/contentStore')
 const router = express.Router()
+router.use(protectMutation, requireUser)
 
-function learnerId(req) {
-  return String(req.header('x-learner-id') || '').trim()
-}
-
-router.get('/', async (req, res, next) => {
-  const id = learnerId(req)
-  if (!id) return res.status(400).json({ message: 'x-learner-id is required' })
-  if (!isDatabaseConnected()) return res.json({ entries: [], persisted: false })
-
-  try {
-    const progress = await Progress.findOne({ learnerId: id }).lean()
-    res.json({ entries: progress?.entries || [], persisted: true })
-  } catch (error) {
-    next(error)
-  }
-})
-
-router.put('/', async (req, res, next) => {
-  const id = learnerId(req)
-  const entries = Array.isArray(req.body.entries) ? req.body.entries.slice(0, 100) : null
-  if (!id) return res.status(400).json({ message: 'x-learner-id is required' })
-  if (!entries) return res.status(400).json({ message: 'entries must be an array' })
-  if (!isDatabaseConnected()) return res.json({ entries, persisted: false })
-
-  try {
-    const progress = await Progress.findOneAndUpdate(
-      { learnerId: id },
-      { learnerId: id, entries },
-      { new: true, upsert: true, runValidators: true }
-    ).lean()
-    res.json({ entries: progress.entries, persisted: true })
-  } catch (error) {
-    next(error)
-  }
-})
-
-router.delete('/', async (req, res, next) => {
-  const id = learnerId(req)
-  if (!id) return res.status(400).json({ message: 'x-learner-id is required' })
-  if (!isDatabaseConnected()) return res.json({ persisted: false })
-
-  try {
-    await Progress.deleteOne({ learnerId: id })
-    res.json({ persisted: true })
-  } catch (error) {
-    next(error)
-  }
-})
-
+router.get('/', (req, res) => res.json(summarizeUser(req.user)))
+router.post('/lessons/:id', wrap(async (req, res) => {
+  if (!await getLessonById(req.params.id)) return res.status(404).json({ message: 'Lesson not found.' })
+  const status = req.body.status
+  if (!['in-progress', 'completed'].includes(status)) return res.status(400).json({ message: 'Invalid lesson status.' })
+  const field = status === 'completed' ? 'completedLessons' : 'startedLessons'
+  const user = await User.findByIdAndUpdate(req.user._id, { $addToSet: { [field]: req.params.id } }, { new: true })
+  res.json(summarizeUser(user))
+}))
+router.put('/flags/:id', wrap(async (req, res) => {
+  if (!getExerciseById(req.params.id)) return res.status(404).json({ message: 'Question not found.' })
+  if (typeof req.body.flagged !== 'boolean') return res.status(400).json({ message: 'Specify whether the question is flagged.' })
+  const op = req.body.flagged ? '$addToSet' : '$pull'
+  const user = await User.findByIdAndUpdate(req.user._id, { [op]: { flaggedQuestions: req.params.id } }, { new: true })
+  res.json(summarizeUser(user))
+}))
+router.delete('/', wrap(async (req, res) => {
+  const user = await User.findByIdAndUpdate(req.user._id, { $set: { startedLessons: [], completedLessons: [], passedQuizzes: [], quizResults: {}, solvedQuestions: [], flaggedQuestions: [] } }, { new: true })
+  res.json(summarizeUser(user))
+}))
 module.exports = router
