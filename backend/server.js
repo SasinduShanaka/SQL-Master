@@ -1,6 +1,5 @@
-require('dotenv').config()
+require('dotenv').config({ path: require('node:path').join(__dirname, '.env') })
 const express = require('express')
-const cors = require('cors')
 const lessonRoutes = require('./routes/lessons')
 const quizRoutes = require('./routes/quizzes')
 const exerciseRoutes = require('./routes/exercises')
@@ -11,10 +10,12 @@ const progressRoutes = require('./routes/progress')
 const { connectDatabase } = require('./db')
 const { getCatalogRoadmap } = require('./services/aiContent')
 
+const { getLibraryStats } = require('./services/contentStore')
+
 const app = express()
 
-app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '32kb' }))
+app.use('/api/auth', require('./routes/auth'))
 
 app.get('/api/ping', (req, res) => {
   res.json({ message: 'pong' })
@@ -35,10 +36,18 @@ app.use('/api/progress', progressRoutes)
 app.get('/api/catalog', async (req, res, next) => {
   try {
     const roadmap = await getCatalogRoadmap()
-    res.json({ roadmap })
+    res.json({ roadmap, library: getLibraryStats() })
   } catch (error) {
     next(error)
   }
+})
+
+app.use('/api', (req, res) => res.status(404).json({ message: 'API endpoint not found.' }))
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error)
+  const status = error.status === 400 || error.type === 'entity.parse.failed' ? 400 : error.status === 413 ? 413 : 500
+  res.status(status).json({ message: status === 400 ? 'Invalid request data.' : status === 413 ? 'Request is too large.' : 'The request could not be completed. Please try again.' })
 })
 
 const PORT = process.env.PORT || 5000
@@ -48,4 +57,6 @@ async function startServer() {
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 }
 
-startServer()
+if (require.main === module) startServer()
+
+module.exports = app
