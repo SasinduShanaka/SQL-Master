@@ -1,41 +1,4 @@
-const fallbackLessons = [
-  {
-    order: 1,
-    id: 'intro-select',
-    level: 'beginner',
-    title: 'Getting Started with SELECT',
-    topic: 'SELECT, FROM, ORDER BY',
-    summary: 'Read rows from a table and sort results.',
-    explanation: 'SELECT chooses columns, FROM chooses a table, and ORDER BY sorts the output.'
-  },
-  {
-    order: 2,
-    id: 'filtering',
-    level: 'beginner',
-    title: 'Filtering Rows with WHERE',
-    topic: 'WHERE, AND, OR, IN, BETWEEN',
-    summary: 'Learn how to narrow down results.',
-    explanation: 'WHERE applies boolean conditions to each row before results are returned.'
-  },
-  {
-    order: 3,
-    id: 'joins',
-    level: 'intermediate',
-    title: 'Joining Tables',
-    topic: 'INNER JOIN, LEFT JOIN',
-    summary: 'Combine data from multiple tables.',
-    explanation: 'JOINs match related records across tables using key columns.'
-  },
-  {
-    order: 4,
-    id: 'window-functions',
-    level: 'advanced',
-    title: 'Window Functions',
-    topic: 'ROW_NUMBER, RANK, OVER',
-    summary: 'Compute analytics without collapsing rows.',
-    explanation: 'Window functions calculate values across a set of rows while preserving each row.'
-  }
-]
+const { lessons: fallbackLessons } = require('../../shared/curriculum.json')
 
 const fallbackQuizzes = [
   {
@@ -58,65 +21,9 @@ const fallbackQuizzes = [
   }
 ]
 
-const contentCache = {
-  lessons: null,
-  quizzes: null,
-  roadmap: null,
-  hintCache: new Map()
-}
+const contentCache = { hintCache: new Map() }
 
-function slugify(value) {
-  return String(value)
-  const fallbackExercises = [
-    {
-      order: 1,
-      id: 'exercise-high-scores',
-      lessonId: 'intro-select',
-      tableNames: ['students'],
-      question: 'Show the names and scores of students who scored at least 85, sorted highest first.',
-      goal: 'Practice SELECT, WHERE, and ORDER BY.',
-      hints: ['Start with SELECT name, score', 'Filter with WHERE score >= 85', 'Sort with ORDER BY score DESC'],
-      starterSql: 'SELECT name, score\nFROM students\nWHERE score >= 85\nORDER BY score DESC;',
-      solutionSql: 'SELECT name, score FROM students WHERE score >= 85 ORDER BY score DESC;'
-    },
-    {
-      order: 2,
-      id: 'exercise-active-enrollments',
-      lessonId: 'filtering',
-      tableNames: ['enrollments'],
-      question: 'Find every active enrollment in SQL Basics.',
-      goal: 'Practice filtering with WHERE and text conditions.',
-      hints: ['Look for course = SQL Basics', 'Filter status = active'],
-      starterSql: "SELECT studentId, course, status\nFROM enrollments\nWHERE course = 'SQL Basics' AND status = 'active';",
-      solutionSql: "SELECT studentId, course, status FROM enrollments WHERE course = 'SQL Basics' AND status = 'active';"
-    },
-    {
-      order: 3,
-      id: 'exercise-web-cohort',
-      lessonId: 'intro-select',
-      tableNames: ['students'],
-      question: 'List the students from the web cohort only.',
-      goal: 'Practice WHERE with a categorical field.',
-      hints: ['Filter cohort = web', 'Return id and name'],
-      starterSql: "SELECT id, name\nFROM students\nWHERE cohort = 'web';",
-      solutionSql: "SELECT id, name FROM students WHERE cohort = 'web';"
-    },
-    {
-      order: 4,
-      id: 'exercise-course-count',
-      lessonId: 'joins',
-      tableNames: ['courses', 'enrollments'],
-      question: 'Count how many enrollments each course has.',
-      goal: 'Practice aggregation and GROUP BY.',
-      hints: ['Use COUNT(*) and GROUP BY course'],
-      starterSql: 'SELECT course, COUNT(*) AS enrollment_count\nFROM enrollments\nGROUP BY course;',
-      solutionSql: 'SELECT course, COUNT(*) AS enrollment_count FROM enrollments GROUP BY course;'
-    }
-  ]
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
+const { getExercises, getExerciseById } = require('./contentStore')
 
 function safeJsonParse(raw) {
   try {
@@ -133,37 +40,6 @@ function safeJsonParse(raw) {
   }
 }
 
-function normalizeLessons(lessons) {
-  return lessons.slice(0, 4).map((lesson, index) => ({
-    order: index + 1,
-    id: slugify(lesson.id || lesson.title || `lesson-${index + 1}`),
-    level: lesson.level || ['beginner', 'beginner', 'intermediate', 'advanced'][index] || 'beginner',
-    title: lesson.title || `Lesson ${index + 1}`,
-    topic: lesson.topic || 'SQL fundamentals',
-    summary: lesson.summary || 'Learn the core idea for this SQL topic.',
-    explanation: lesson.explanation || 'Use the lesson to practice this SQL concept in context.'
-  }))
-}
-
-function normalizeQuizzes(quizzes, lessons) {
-  return quizzes.slice(0, 4).map((quiz, index) => {
-    const lesson = lessons[index] || lessons[0]
-    const options = Array.isArray(quiz.options) && quiz.options.length >= 4
-      ? quiz.options.slice(0, 4)
-      : ['Option A', 'Option B', 'Option C', 'Option D']
-
-    return {
-      order: index + 1,
-      id: slugify(quiz.id || quiz.question || `quiz-${index + 1}`),
-      lessonId: lesson?.id || `lesson-${index + 1}`,
-      question: quiz.question || `Which answer best describes ${lesson?.title || 'this topic'}?`,
-      options,
-      answerIndex: Number.isInteger(quiz.answerIndex) ? quiz.answerIndex : 1,
-      explanation: quiz.explanation || 'This answer matches the lesson concept.'
-    }
-  })
-}
-
 async function callOpenAi(prompt) {
   const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) return null
@@ -172,6 +48,7 @@ async function callOpenAi(prompt) {
   const model = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
+    signal: AbortSignal.timeout(10000),
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`
@@ -197,47 +74,7 @@ async function callOpenAi(prompt) {
 }
 
 async function generateContent() {
-  if (contentCache.lessons && contentCache.quizzes && contentCache.roadmap) {
-    return {
-      lessons: contentCache.lessons,
-      quizzes: contentCache.quizzes,
-      roadmap: contentCache.roadmap
-    }
-  }
-
-  const prompt = `Generate a compact SQL learning curriculum as valid JSON with this exact shape:
-  {
-    "lessons": [{"id":"string","level":"beginner|intermediate|advanced","title":"string","topic":"string","summary":"string","explanation":"string"}],
-    "quizzes": [{"id":"string","lessonId":"string","question":"string","options":["string","string","string","string"],"answerIndex":0,"explanation":"string"}]
-  }
-
-Rules:
- - Create 4 lessons and 4 quizzes.
- - Keep the lessons focused on SQL basics, filtering, joins, and window functions.
- - Make quiz answerIndex a number from 0 to 3.
- - Output JSON only.`
-
-  const raw = await callOpenAi(prompt)
-  if (raw) {
-    const parsed = safeJsonParse(raw)
-    if (parsed?.lessons && parsed?.quizzes) {
-      const lessons = normalizeLessons(parsed.lessons)
-      const quizzes = normalizeQuizzes(parsed.quizzes, lessons)
-      const roadmap = lessons.map((lesson) => `${lesson.level}: ${lesson.topic}`)
-      contentCache.lessons = lessons
-      contentCache.quizzes = quizzes
-      contentCache.roadmap = roadmap
-      return { lessons, quizzes, roadmap }
-    }
-  }
-
-  const lessons = normalizeLessons(fallbackLessons)
-  const quizzes = normalizeQuizzes(fallbackQuizzes, lessons)
-  const roadmap = lessons.map((lesson) => `${lesson.level}: ${lesson.topic}`)
-  contentCache.lessons = lessons
-  contentCache.quizzes = quizzes
-  contentCache.roadmap = roadmap
-  return { lessons, quizzes, roadmap }
+  return { lessons: fallbackLessons, quizzes: fallbackQuizzes, roadmap: fallbackLessons.map(lesson => `${lesson.level}: ${lesson.topic}`) }
 }
 
 async function getLessons() {
@@ -274,7 +111,7 @@ async function generateHint(prompt) {
   const cached = contentCache.hintCache.get(normalizedPrompt)
   if (cached) return cached
 
-  const apiHint = await callOpenAi(`Give a short, practical SQL hint for this query or problem. Return JSON only in the shape {"hint":"string"}. Prompt: ${normalizedPrompt}`)
+  const apiHint = await callOpenAi(`Give a short, practical SQL hint for this query or problem. Return JSON only in the shape {"hint":"string"}. Prompt: ${normalizedPrompt}`).catch(() => null)
   if (apiHint) {
     const parsed = safeJsonParse(apiHint)
     if (parsed?.hint) {
@@ -299,5 +136,7 @@ module.exports = {
   getQuizzes,
   getQuizById,
   getCatalogRoadmap,
+  getExercises,
+  getExerciseById,
   generateHint
 }
