@@ -1,0 +1,59 @@
+[
+  {
+    "id": "retail-pulse",
+    "title": "The retail revenue report",
+    "category": "Business analytics",
+    "level": "beginner",
+    "minutes": 35,
+    "icon": "chart",
+    "color": "indigo",
+    "description": "Turn a month's order data into a clear picture of sales performance.",
+    "brief": "You have joined a retail analytics team. Your manager needs a January snapshot for the North region: which orders were completed, which were the largest, and how much revenue each status represents. Work through the questions to prepare the underlying report.",
+    "outcome": "A three-query sales report covering completed orders, the top five orders, and revenue by status.",
+    "skills": ["WHERE", "ORDER BY", "GROUP BY"],
+    "tables": ["orders"],
+    "steps": [
+      { "id": "business-north-2025-01-1", "track": "practice", "title": "Find completed orders", "description": "Establish the reporting scope: North, January 2025, and completed orders." },
+      { "id": "business-north-2025-01-2", "track": "practice", "title": "Identify the biggest orders", "description": "Rank the five largest orders and use a stable tie-breaker." },
+      { "id": "business-north-2025-01-5", "track": "practice", "title": "Summarize the month", "description": "Count orders and total recorded revenue for each status." }
+    ]
+  },
+  {
+    "id": "customer-health",
+    "title": "Investigate customer health",
+    "category": "Customer analytics",
+    "level": "intermediate",
+    "minutes": 45,
+    "icon": "target",
+    "color": "teal",
+    "description": "Connect customer records, investigate data quality, and find inactive accounts.",
+    "brief": "The customer success team wants to understand its North region accounts. Start by connecting January orders to customer names. Then investigate customers who have never ordered and duplicate email addresses that could distort reporting.",
+    "outcome": "A customer audit with linked orders, an inactive-account list, and duplicate-email counts.",
+    "skills": ["JOINs", "LEFT JOIN", "HAVING"],
+    "tables": ["customers", "orders"],
+    "steps": [
+      { "id": "business-north-2025-01-7", "track": "practice", "title": "Connect orders to customers", "description": "Join customer names onto January orders without losing valid orders." },
+      { "id": "interview-north-2", "track": "interview", "title": "Find accounts without orders", "description": "Use an outer join to find customers who have never purchased." },
+      { "id": "interview-north-3", "track": "interview", "title": "Audit duplicate email addresses", "description": "Group accounts by email and isolate repeated values." }
+    ]
+  },
+  {
+    "id": "operations-brief",
+    "title": "Build an operations briefing",
+    "category": "Advanced reporting",
+    "level": "advanced",
+    "minutes": 60,
+    "icon": "briefcase",
+    "color": "amber",
+    "description": "Use CTEs and conditional aggregation to answer business questions with multiple steps.",
+    "brief": "Prepare an operations briefing for the North region. The team needs January product revenue, a department-relative compensation review, and monthly cancellation counts. Structure each query so another analyst can follow your reasoning.",
+    "outcome": "Three analytical queries covering product revenue, department salary comparisons, and cancellation trends.",
+    "skills": ["CTEs", "JOINs", "CASE"],
+    "tables": ["orders", "employees"],
+    "steps": [
+      { "id": "business-north-2025-01-10", "track": "practice", "title": "Report product revenue", "description": "Use a scoped CTE and aggregate completed-order revenue by product." },
+      { "id": "interview-north-5", "track": "interview", "title": "Compare department salaries", "description": "Find employees above their own department's regional average." },
+      { "id": "interview-north-6", "track": "interview", "title": "Measure cancellation trends", "description": "Count all orders and cancelled orders for each month." }
+    ]
+  }
+]
