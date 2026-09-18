@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function QuizPage({ quizzes, quizPick, setQuizPick, submitQuiz, progress, navigate }) {
+export default function QuizPage({ quizzes, quizPick, setQuizPick, submitQuiz, progress, navigate, accountBusy }) {
   return (
     <section className="card quiz-panel page-panel">
       <div className="section-header">
@@ -12,6 +12,7 @@ export default function QuizPage({ quizzes, quizPick, setQuizPick, submitQuiz, p
         <button className="ghost" onClick={() => navigate('home')}>Back home</button>
       </div>
       <div className="quiz-list">
+        {!quizzes.length && <p className="empty-state">Knowledge checks will appear when the learning server is connected.</p>}
         {quizzes.map((quiz) => (
           <div key={quiz.id} className="quiz-item">
             <p className="quiz-question">{quiz.question}</p>
@@ -29,12 +30,11 @@ export default function QuizPage({ quizzes, quizPick, setQuizPick, submitQuiz, p
               ))}
             </div>
             <div className="quiz-footer">
-              <button onClick={() => submitQuiz(quiz.id)}>Submit answer</button>
+              <button disabled={accountBusy || !Number.isInteger(quizPick[quiz.id])} onClick={() => submitQuiz(quiz.id)}>Submit answer</button>
               <span className="hint">{quiz.lessonId}</span>
             </div>
             <div className="result-box compact-result">
-              <strong>Latest attempts</strong>
-              <pre>{JSON.stringify(progress.filter((item) => item.quizId === quiz.id), null, 2)}</pre>
+              {progress.filter(item => item.quizId === quiz.id).map(item => <p key={item.quizId} role="status"><strong>{item.correct ? 'Correct - well done! ' : 'Not quite. '}</strong>{item.explanation}</p>)}
             </div>
           </div>
         ))}
