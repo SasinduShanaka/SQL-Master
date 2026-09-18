@@ -1,0 +1,332 @@
+{
+  "lessons": [
+    {
+      "order": 1,
+      "id": "intro-select",
+      "level": "beginner",
+      "topic": "SELECT",
+      "title": "Read your first table",
+      "summary": "Choose individual columns with SELECT, or use * to inspect every column.",
+      "explanation": "Choose individual columns with SELECT, or use * to inspect every column. FROM identifies the table.",
+      "exampleSql": "SELECT * FROM students;"
+    },
+    {
+      "order": 2,
+      "id": "filtering",
+      "level": "beginner",
+      "topic": "WHERE",
+      "title": "Filter with purpose",
+      "summary": "WHERE keeps rows that satisfy a condition.",
+      "explanation": "WHERE keeps rows that satisfy a condition. Combine conditions with AND or OR; wrap text values in single quotes.",
+      "exampleSql": "SELECT * FROM students WHERE score >= 85;"
+    },
+    {
+      "order": 3,
+      "id": "sorting",
+      "level": "beginner",
+      "topic": "ORDER BY",
+      "title": "Sort and limit results",
+      "summary": "ORDER BY sorts ascending by default.",
+      "explanation": "ORDER BY sorts ascending by default. DESC reverses the order. LIMIT restricts how many rows are returned.",
+      "exampleSql": "SELECT * FROM students ORDER BY score DESC LIMIT 2;"
+    },
+    {
+      "order": 4,
+      "id": "distinct",
+      "level": "beginner",
+      "topic": "DISTINCT",
+      "title": "Find unique values",
+      "summary": "DISTINCT removes duplicate combinations of the selected columns.",
+      "explanation": "DISTINCT removes duplicate combinations of the selected columns. Select only cohort to see the unique cohorts.",
+      "exampleSql": "SELECT DISTINCT cohort FROM students;"
+    },
+    {
+      "order": 5,
+      "id": "aggregates",
+      "level": "intermediate",
+      "topic": "GROUP BY",
+      "title": "Summarize your data",
+      "summary": "GROUP BY creates one result per group.",
+      "explanation": "GROUP BY creates one result per group. COUNT counts rows and AVG calculates the mean of non-null values.",
+      "exampleSql": "SELECT cohort, AVG(score) AS average_score FROM students GROUP BY cohort;"
+    },
+    {
+      "order": 6,
+      "id": "having",
+      "level": "intermediate",
+      "topic": "HAVING",
+      "title": "Filter grouped results",
+      "summary": "WHERE filters rows before grouping.",
+      "explanation": "WHERE filters rows before grouping. HAVING filters groups after aggregate values have been calculated.",
+      "exampleSql": "SELECT cohort, AVG(score) AS average_score FROM students GROUP BY cohort HAVING AVG(score) >= 85;"
+    },
+    {
+      "order": 7,
+      "id": "joins",
+      "level": "intermediate",
+      "topic": "JOINs",
+      "title": "Connect related tables",
+      "summary": "INNER JOIN returns matches from both tables.",
+      "explanation": "INNER JOIN returns matches from both tables. Match students.id to enrollments.studentId to connect a student with their courses.",
+      "exampleSql": "SELECT s.name, e.course FROM students s JOIN enrollments e ON s.id = e.studentId;"
+    },
+    {
+      "order": 8,
+      "id": "left-joins",
+      "level": "intermediate",
+      "topic": "LEFT JOIN",
+      "title": "Keep unmatched records",
+      "summary": "LEFT JOIN preserves all left-side records.",
+      "explanation": "LEFT JOIN preserves all left-side records. Count a right-side column rather than COUNT(*) to count zero for unmatched rows.",
+      "exampleSql": "SELECT c.title, COUNT(e.studentId) AS enrollment_count FROM courses c LEFT JOIN enrollments e ON c.title = e.course GROUP BY c.title;"
+    },
+    {
+      "order": 9,
+      "id": "subqueries",
+      "level": "advanced",
+      "topic": "Subqueries",
+      "title": "Compare against a subquery",
+      "summary": "A scalar subquery returns one value.",
+      "explanation": "A scalar subquery returns one value. Use an aggregate in a subquery to compare each student against the overall average.",
+      "exampleSql": "SELECT * FROM students WHERE score > (SELECT AVG(score) FROM students);"
+    },
+    {
+      "order": 10,
+      "id": "ctes",
+      "level": "advanced",
+      "topic": "CTEs",
+      "title": "Organize a multi-step query",
+      "summary": "WITH names a temporary result for the duration of one query.",
+      "explanation": "WITH names a temporary result for the duration of one query. Use descriptive names to make multi-step analysis easier to read.",
+      "exampleSql": "WITH high_scores AS (SELECT * FROM students WHERE score >= 85) SELECT * FROM high_scores;"
+    },
+    {
+      "order": 11,
+      "id": "case",
+      "level": "advanced",
+      "topic": "CASE",
+      "title": "Express business rules",
+      "summary": "CASE WHEN evaluates conditions in order.",
+      "explanation": "CASE WHEN evaluates conditions in order. ELSE provides a default. END closes the expression, and AS gives the result a clear name.",
+      "exampleSql": "SELECT name, CASE WHEN score >= 85 THEN 'high' ELSE 'standard' END AS band FROM students;"
+    },
+    {
+      "order": 12,
+      "id": "analytics",
+      "level": "advanced",
+      "topic": "Analytics",
+      "title": "Build a cohort report",
+      "summary": "Combine grouping, aggregate filters, and sorting in one report.",
+      "explanation": "Combine grouping, aggregate filters, and sorting in one report. SQL evaluates row filters, groups, group filters, then the final ordering.",
+      "exampleSql": "SELECT cohort, COUNT(*) AS student_count, AVG(score) AS average_score FROM students GROUP BY cohort HAVING COUNT(*) >= 2 ORDER BY average_score DESC;"
+    }
+  ],
+  "exercises": [
+    {
+      "order": 1,
+      "id": "exercise-intro-select",
+      "level": "beginner",
+      "topic": "SELECT",
+      "lessonId": "intro-select",
+      "question": "Return every student.",
+      "goal": "Read your first table",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "Choose individual columns with SELECT, or use * to inspect every column. FROM identifies the table."
+      ],
+      "starterSql": "-- Return every student.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT * FROM students;"
+    },
+    {
+      "order": 2,
+      "id": "exercise-filtering",
+      "level": "beginner",
+      "topic": "WHERE",
+      "lessonId": "filtering",
+      "question": "Return students with a score of at least 85.",
+      "goal": "Filter with purpose",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "WHERE keeps rows that satisfy a condition. Combine conditions with AND or OR; wrap text values in single quotes."
+      ],
+      "starterSql": "-- Return students with a score of at least 85.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT * FROM students WHERE score >= 85;"
+    },
+    {
+      "order": 3,
+      "id": "exercise-sorting",
+      "level": "beginner",
+      "topic": "ORDER BY",
+      "lessonId": "sorting",
+      "question": "Return the two highest-scoring students, highest score first.",
+      "goal": "Sort and limit results",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "ORDER BY sorts ascending by default. DESC reverses the order. LIMIT restricts how many rows are returned."
+      ],
+      "starterSql": "-- Return the two highest-scoring students, highest score first.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT * FROM students ORDER BY score DESC LIMIT 2;"
+    },
+    {
+      "order": 4,
+      "id": "exercise-distinct",
+      "level": "beginner",
+      "topic": "DISTINCT",
+      "lessonId": "distinct",
+      "question": "Return the distinct student cohorts.",
+      "goal": "Find unique values",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "DISTINCT removes duplicate combinations of the selected columns. Select only cohort to see the unique cohorts."
+      ],
+      "starterSql": "-- Return the distinct student cohorts.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT DISTINCT cohort FROM students;"
+    },
+    {
+      "order": 5,
+      "id": "exercise-aggregates",
+      "level": "intermediate",
+      "topic": "GROUP BY",
+      "lessonId": "aggregates",
+      "question": "Return cohort and average_score for each cohort.",
+      "goal": "Summarize your data",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "GROUP BY creates one result per group. COUNT counts rows and AVG calculates the mean of non-null values."
+      ],
+      "starterSql": "-- Return cohort and average_score for each cohort.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT cohort, AVG(score) AS average_score FROM students GROUP BY cohort;"
+    },
+    {
+      "order": 6,
+      "id": "exercise-having",
+      "level": "intermediate",
+      "topic": "HAVING",
+      "lessonId": "having",
+      "question": "Return cohort and average_score for cohorts averaging at least 85.",
+      "goal": "Filter grouped results",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "WHERE filters rows before grouping. HAVING filters groups after aggregate values have been calculated."
+      ],
+      "starterSql": "-- Return cohort and average_score for cohorts averaging at least 85.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT cohort, AVG(score) AS average_score FROM students GROUP BY cohort HAVING AVG(score) >= 85;"
+    },
+    {
+      "order": 7,
+      "id": "exercise-joins",
+      "level": "intermediate",
+      "topic": "JOINs",
+      "lessonId": "joins",
+      "question": "Return each enrolled student\u2019s name and course.",
+      "goal": "Connect related tables",
+      "tableNames": [
+        "students",
+        "enrollments"
+      ],
+      "hints": [
+        "INNER JOIN returns matches from both tables. Match students.id to enrollments.studentId to connect a student with their courses."
+      ],
+      "starterSql": "-- Return each enrolled student\u2019s name and course.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT s.name, e.course FROM students s JOIN enrollments e ON s.id = e.studentId;"
+    },
+    {
+      "order": 8,
+      "id": "exercise-left-joins",
+      "level": "intermediate",
+      "topic": "LEFT JOIN",
+      "lessonId": "left-joins",
+      "question": "Return each course title and enrollment_count, including courses without enrollments.",
+      "goal": "Keep unmatched records",
+      "tableNames": [
+        "courses",
+        "enrollments"
+      ],
+      "hints": [
+        "LEFT JOIN preserves all left-side records. Count a right-side column rather than COUNT(*) to count zero for unmatched rows."
+      ],
+      "starterSql": "-- Return each course title and enrollment_count, including courses without enrollments.\nSELECT\nFROM courses;",
+      "solutionSql": "SELECT c.title, COUNT(e.studentId) AS enrollment_count FROM courses c LEFT JOIN enrollments e ON c.title = e.course GROUP BY c.title;"
+    },
+    {
+      "order": 9,
+      "id": "exercise-subqueries",
+      "level": "advanced",
+      "topic": "Subqueries",
+      "lessonId": "subqueries",
+      "question": "Return students whose score is above the overall average.",
+      "goal": "Compare against a subquery",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "A scalar subquery returns one value. Use an aggregate in a subquery to compare each student against the overall average."
+      ],
+      "starterSql": "-- Return students whose score is above the overall average.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT * FROM students WHERE score > (SELECT AVG(score) FROM students);"
+    },
+    {
+      "order": 10,
+      "id": "exercise-ctes",
+      "level": "advanced",
+      "topic": "CTEs",
+      "lessonId": "ctes",
+      "question": "Use a CTE named high_scores to return students scoring at least 85.",
+      "goal": "Organize a multi-step query",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "WITH names a temporary result for the duration of one query. Use descriptive names to make multi-step analysis easier to read."
+      ],
+      "starterSql": "-- Use a CTE named high_scores to return students scoring at least 85.\nSELECT\nFROM students;",
+      "solutionSql": "WITH high_scores AS (SELECT * FROM students WHERE score >= 85) SELECT * FROM high_scores;"
+    },
+    {
+      "order": 11,
+      "id": "exercise-case",
+      "level": "advanced",
+      "topic": "CASE",
+      "lessonId": "case",
+      "question": "Return name and band: high for scores at least 85, otherwise standard.",
+      "goal": "Express business rules",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "CASE WHEN evaluates conditions in order. ELSE provides a default. END closes the expression, and AS gives the result a clear name."
+      ],
+      "starterSql": "-- Return name and band: high for scores at least 85, otherwise standard.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT name, CASE WHEN score >= 85 THEN 'high' ELSE 'standard' END AS band FROM students;"
+    },
+    {
+      "order": 12,
+      "id": "exercise-analytics",
+      "level": "advanced",
+      "topic": "Analytics",
+      "lessonId": "analytics",
+      "question": "Return cohort, student_count, and average_score for cohorts with at least two students, highest average first.",
+      "goal": "Build a cohort report",
+      "tableNames": [
+        "students"
+      ],
+      "hints": [
+        "Combine grouping, aggregate filters, and sorting in one report. SQL evaluates row filters, groups, group filters, then the final ordering."
+      ],
+      "starterSql": "-- Return cohort, student_count, and average_score for cohorts with at least two students, highest average first.\nSELECT\nFROM students;",
+      "solutionSql": "SELECT cohort, COUNT(*) AS student_count, AVG(score) AS average_score FROM students GROUP BY cohort HAVING COUNT(*) >= 2 ORDER BY average_score DESC;"
+    }
+  ]
+}
